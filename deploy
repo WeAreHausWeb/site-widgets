@@ -1,0 +1,40 @@
+#!/bin/bash
+# ------------------------------------------------- #
+# Deploy plugin files to plugin folder on specified server.
+# Update the server variables for ssh access.
+
+SSH_USER='hausXX';
+
+SSH_SERVER='srv01';
+REMOTE_PLUGIN_PATH='www/wp-content/plugins/webien-site-widgets';
+
+# No further adjustments are needed.
+#
+#
+#
+# ------------------------------------------------- #
+# COMPILE & MINIFY
+# ------------------------------------------------- #
+nvm use
+npx mix --production
+
+
+# ------------------------------------------------- #
+# SYNC NECESSARY FILES TO SERVER
+# ------------------------------------------------- #
+# Sync files/folders to server
+EXCLUDES={'node_modules','.github','.idea','.gitignore','.nvmrc','composer.json','composer.lock','mix-manifest.json','package.json','package-lock.json','webpack.mix.js','README.md','deploy'}
+rsync -a ./* $SSH_USER@$SSH_SERVER:$REMOTE_PLUGIN_PATH --exclude=$EXCLUDES
+
+
+# ------------------------------------------------- #
+# CLEANUP
+# ------------------------------------------------- #
+# Beautify scripts again
+npx mix
+
+
+# ------------------------------------------------- #
+# SUCCESS
+# ------------------------------------------------- #
+echo -e "\033[0;32m››› Deploy complete ‹‹‹"

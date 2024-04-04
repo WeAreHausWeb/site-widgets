@@ -1,0 +1,25 @@
+{
+    "name": "webien-site-plugins",
+    "version": "1.0.0",
+    "description": "Webien site plugin",
+    "main": "index.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "webien",
+    "license": "ISC",
+    "devDependencies": {
+        "browser-sync": "*",
+        "browser-sync-webpack-plugin": "*",
+        "laravel-mix": "*",
+        "resolve-url-loader": "*",
+        "sass": "*",
+        "sass-loader": "*",
+        "vue-loader": "*"
+    },
+    "dependencies": {
+        "axios": "*",
+        "vue": "*"
+    }
+}

@@ -1,0 +1,22 @@
+@import "variables";
+@import "mixins";
+
+// Icomoon
+//@import "../fonts/icomoon/style.css";
+
+// Import all the components
+//@import "../../src/XXX/scss/style.scss";
+
+
+
+//------------------------------------------------------------------------------------//
+// View height
+//------------------------------------------------------------------------------------//
+:root {
+  --vh: 100vh; // Will be overridden once js kicks in
+  --all-height-available: 100vh;
+  --all-height-available: -webkit-fill-available;
+  --all-height-available: -moz-available;
+  --all-height-available: fill-available;
+  --all-height-available: calc(var(--vh) * 100); // final
+}

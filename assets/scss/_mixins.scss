@@ -1,0 +1,112 @@
+//------------------------------------------------------------------------------------//
+// RESPONSIVE
+//------------------------------------------------------------------------------------//
+
+@mixin for-phone-only {
+  @media (max-width: 766px) { @content; }
+}
+@mixin for-tablet-portrait-up {
+  @media (min-width: 767px) { @content; }
+}
+@mixin for-tablet-landscape-up {
+  @media (min-width: 1024px) { @content; }
+}
+@mixin for-desktop-up {
+  @media (min-width: 1128px) { @content; }
+}
+@mixin desktop {
+  @media (min-width: 1128px) { @content; }
+}
+@mixin for-big-desktop-up {
+  @media (min-width: 1800px) { @content; }
+}
+
+
+//------------------------------------------------------------------------------------//
+// MISC
+//------------------------------------------------------------------------------------//
+
+@mixin input-styles {
+  color: $black;
+  height: $input-height;
+  line-height: $input-height;
+  background-color: $white;
+  padding: 0 16px 0 16px;
+  border-radius: $border-radius-small;
+  font-size: $font-size;
+  font-weight: $font-weight;
+  border: 1px solid $white;
+  width: 100%;
+
+}
+
+@mixin icomoon {
+  font-family: 'icomoon';
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+
+
+@mixin normalize-button {
+  color: $black;
+  cursor: pointer;
+  appearance: none;
+  outline: none;
+  background-color: transparent;
+  padding: 0;
+  border: none;
+  border-radius: $border-radius;
+
+  &:hover,
+  &:focus,
+  &:active {
+    outline: none;
+    background-color: transparent;
+  }
+}
+
+
+
+// Hover only when needed
+@mixin hover {
+  &:hover {
+    .no-touch & {
+      @content;
+    }
+  }
+  &:active {
+    .touch & {
+      @content;
+    }
+  }
+}
+
+
+// Aspect ratio with fallback
+@mixin aspect-ratio($width, $height) {
+
+  // default
+  aspect-ratio: $width/$height;
+
+  // Fallback (https://codepen.io/una/pen/BazyaOM)
+  @supports not (aspect-ratio: $width / $height) {
+    &:before {
+      float: left;
+      padding-top: calc((($height / $width) * 100%));
+      content: '';
+    }
+
+    &:after {
+      display: block;
+      content: '';
+      clear: both;
+    }
+  }
+}

@@ -1,0 +1,142 @@
+.membership-form {
+  .inner {
+    opacity: 0;
+    transition: opacity 0.3s;
+
+    &.ready {
+        opacity: 1;
+    }
+
+    .elementor-editor-active & {
+      opacity: 1;
+    }
+  }
+
+  select {
+    @include input-styles;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url($images + 'dropdown.svg');
+    background-repeat: no-repeat;
+    background-position: right 10px top 50%;
+    background-size: 12px;
+    padding-right: 32px;
+    width: 100%;
+
+    @include desktop {
+      width: 360px;
+    }
+
+
+  }
+
+
+
+
+  .memberships {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
+    .item {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+
+      &.campaign {
+        .ticket .txt {
+          color: $purple;
+        }
+      }
+
+      &:nth-of-type(2n + 2){
+        .ticket {
+          transform: rotate(calc($ticket-rotation * 2));
+        }
+      }
+
+      .ticket {
+        width: 350px;
+        @include aspect-ratio(350, 209);
+        user-select: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+
+
+        img {
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: calc(100% + 10px);
+          height: auto;
+          pointer-events: none;
+          user-select: none;
+          max-width: none;
+        }
+
+
+        .txt {
+          position: relative;
+          z-index: 1;
+          text-align: center;
+          transform: rotate(calc($ticket-rotation * -1)) translateY(-10px);
+          width: 100%;
+          padding: 0 19%;
+
+          .name {
+            @include heading-big;
+            line-height: 0.775em;
+          }
+          .price {
+            @include heading-semi-big;
+          }
+        }
+      }
+
+      .action {
+        text-align: center;
+      }
+
+
+
+      .usps {
+        list-style: none;
+        margin: 16px 0 0 0;
+        padding: 0 10px;
+        max-width: 350px;
+
+        li {
+          list-style: none;
+          border-bottom: 1px solid $turquoise;
+          padding: 5px 0;
+          display: flex;
+          align-items: baseline;
+          gap: 5px;
+
+          &:first-child {
+            border-top: 1px solid $turquoise;
+          }
+
+          .icon {
+            transform: translateY(1px);
+          }
+
+          a {
+            text-decoration: underline;
+            color: inherit;
+          }
+        }
+
+      }
+
+    }
+
+
+
+  }
+
+}

@@ -1,0 +1,23 @@
+# Application
+
+
+# Misc
+*.log
+*.sql
+
+# Cache
+cache
+
+# Dotenv
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea
+
+# NPM
+node_modules/
+
+# WP-CLI
+wp-cli.local.yml
