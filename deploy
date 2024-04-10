@@ -15,7 +15,7 @@ REMOTE_PLUGIN_PATH='www/wp-content/plugins/site-widgets';
 # ------------------------------------------------- #
 # COMPILE & MINIFY
 # ------------------------------------------------- #
-nvm use
+#nvm use
 npx mix --production
 
 
@@ -23,8 +23,9 @@ npx mix --production
 # SYNC NECESSARY FILES TO SERVER
 # ------------------------------------------------- #
 # Sync files/folders to server
-EXCLUDES={'node_modules','.github','.idea','.gitignore','.nvmrc','composer.json','composer.lock','mix-manifest.json','package.json','package-lock.json','webpack.mix.js','README.md','deploy'}
-rsync -a ./* $SSH_USER@$SSH_SERVER:$REMOTE_PLUGIN_PATH --exclude=$EXCLUDES
+export LC_ALL=C
+rsync -a ./* $SSH_USER@$SSH_SERVER:$REMOTE_PLUGIN_PATH --exclude=node_modules --exclude=.github --exclude=.idea --exclude=.gitignore --exclude=.nvmrc --exclude=composer.json --exclude=composer.lock --exclude=mix-manifest.json --exclude=package.json --exclude=info.json --exclude=package-lock.json --exclude=webpack.mix.js --exclude=README.md --exclude=deploy
+
 
 
 # ------------------------------------------------- #
