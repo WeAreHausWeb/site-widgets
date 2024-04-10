@@ -5,8 +5,8 @@
 
 SSH_USER='hausXX';
 
-SSH_SERVER='srv01';
-REMOTE_PLUGIN_PATH='www/wp-content/plugins/webien-site-widgets';
+SSH_SERVER='srv01'; # this should be mapped to your ssh config alias
+REMOTE_PLUGIN_PATH='www/wp-content/plugins/site-widgets';
 
 # No further adjustments are needed.
 #
