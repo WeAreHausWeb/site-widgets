@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: Webien - Site widgets
+ * Plugin Name: Site widgets
  * Plugin URI: https://plugins.webien.io
  * Author: Webien
  * Description: Site specific widgets.
