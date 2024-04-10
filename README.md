@@ -1,4 +1,4 @@
-# Webien Site Widgets
+# Site Widgets
 Innehåller diverse site specifika widgets.
 #
 #### För att komma igång, kör först:
