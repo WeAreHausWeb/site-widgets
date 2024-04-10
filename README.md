@@ -1,6 +1,9 @@
 # Webien Site Widgets
 Template plugin för att bygga vidare på och ska innehålla diverse site specifika widgets.
-#
+
+# Site Widgets
+Innehåller diverse site specifika widgets.
+
 #### För att komma igång, kör först:
 ```
 composer install
