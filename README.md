@@ -9,6 +9,13 @@ npm install
 ```
 -----
 #
+#### Bygg dina widgets i src mappen
+Se exempel med `XXX` mappen
+
+Widgeten registreras sen och initieras i `index.php` filen.
+
+-----
+#
 #### Kompilerar styles/scripts med Laravel Mix
 För komma igång och kompilera, kör:
 ```
