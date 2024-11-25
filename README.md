@@ -18,7 +18,7 @@ Editera `webpack.mix.js` filen för att lägga till fler styles/scripts.
 
 -----
 #
-#### Deploy till server
+#### Deploy till server (Oderland)
 Pusha alltid upp dina ändringar till git först.
 Se även till att första gången editera `deploy` filen så att den pekar till din server.
 För att sedan deploya din kod till servern, ställ dig i denna mapp och kör:
