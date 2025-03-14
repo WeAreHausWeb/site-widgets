@@ -30,5 +30,9 @@ Pusha alltid upp dina ändringar till git först.
 Se även till att första gången editera `deploy` filen så att den pekar till din server.
 För att sedan deploya din kod till servern, ställ dig i denna mapp och kör:
 ```
-./deploy
+./deploy -production
+```
+eller
+```
+./deploy -staging
 ```
