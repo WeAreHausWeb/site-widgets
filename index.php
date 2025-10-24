@@ -41,11 +41,11 @@ add_action('init', function () {
 
 add_action('wp_enqueue_scripts', function () {
 
-    $ver = '?1';
+    $ver = '1';
     //$ver = $_ENV['WP_ENV'] === 'production' ? '' : '?time=' . time();
 
-    wp_enqueue_style('webien-site-widgets',  plugin_dir_url( __FILE__ ) . 'dist/style.css' . $ver, [], false);
-    wp_enqueue_script('webien-site-widgets',  plugin_dir_url( __FILE__ ) . 'dist/script.js' . $ver, [], false, true);
+    wp_enqueue_style('webien-site-widgets',  plugin_dir_url( __FILE__ ) . 'dist/style.css', [], $ver);
+    wp_enqueue_script('webien-site-widgets',  plugin_dir_url( __FILE__ ) . 'dist/script.js', [], $ver, true);
 
     // Register to only call when used.
     //wp_register_script('webien-site-app',  plugin_dir_url( __FILE__ ) . 'dist/xxx.js', [], $ver, true);
