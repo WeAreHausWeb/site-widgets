@@ -18,7 +18,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to ${{ github.event.inputs.environment || 'staging' }}
+    name: Deploy to ${{ github.event_name == 'push' && 'production' || github.event.inputs.environment }}
     runs-on: ubuntu-latest
 
     steps:
@@ -37,14 +37,19 @@ jobs:
       - name: Build production assets
         run: npm run build
 
+      - name: Verify build output
+        run: |
+          test -f dist/script.js || (echo "dist/script.js was not built" && exit 1)
+          test -f dist/style.css || (echo "dist/style.css was not built" && exit 1)
+          test -f dist/admin.css || (echo "dist/admin.css was not built" && exit 1)
+          ls -la dist
+          sha256sum dist/script.js dist/style.css dist/admin.css
+
 
       - name: Check deploy config
         run: |
           test -n "${{ vars.ODERLAND_SERVER_IP }}" || (echo "ODERLAND_SERVER_IP variable is missing" && exit 1)
-          test -n "${{ vars.DEPLOY_USER }}" || (echo "DEPLOY_USER variable is missing" && exit 1)
           test -n "${{ secrets.DEPLOY_SSH_KEY }}" || (echo "DEPLOY_SSH_KEY secret is missing" && exit 1)
-          test -n "${{ vars.STAGING_DEPLOY_PATH }}" || (echo "STAGING_DEPLOY_PATH variable is missing" && exit 1)
-          test -n "${{ vars.PRODUCTION_DEPLOY_PATH }}" || (echo "PRODUCTION_DEPLOY_PATH variable is missing" && exit 1)
 
       - name: Configure SSH
         run: |
@@ -53,32 +58,65 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H "${{ vars.ODERLAND_SERVER_IP }}" >> ~/.ssh/known_hosts
 
-      - name: Set remote path
+      - name: Set remote paths
         id: target
         run: |
-          ENVIRONMENT="${{ github.event.inputs.environment || 'staging' }}"
-          
+          ENVIRONMENT="${{ github.event_name == 'push' && 'production' || github.event.inputs.environment }}"
+          echo "environment=$ENVIRONMENT" >> "$GITHUB_OUTPUT"
+          echo "Deploy environment: $ENVIRONMENT"
+
+          sed -n '1,/^# No further adjustments/p' deploy > "$RUNNER_TEMP/deploy-config.sh"
+          source "$RUNNER_TEMP/deploy-config.sh"
+
+          test -n "$SSH_USER" || (echo "SSH_USER is missing in deploy" && exit 1)
+          echo "user=$SSH_USER" >> "$GITHUB_OUTPUT"
+
           if [ "$ENVIRONMENT" = "production" ]; then
-            echo "path=${{ vars.PRODUCTION_DEPLOY_PATH }}" >> "$GITHUB_OUTPUT"
+            REMOTE_PLUGIN_PATHS=("${REMOTE_PLUGIN_PATH_PROD[@]}")
           else
-            echo "path=${{ vars.STAGING_DEPLOY_PATH }}" >> "$GITHUB_OUTPUT"
+            REMOTE_PLUGIN_PATHS=("${REMOTE_PLUGIN_PATH_STAGE[@]}")
           fi
+
+          if [ "${#REMOTE_PLUGIN_PATHS[@]}" -eq 0 ]; then
+            echo "No remote plugin paths configured for $ENVIRONMENT in deploy. Skipping upload."
+          else
+            echo "Remote plugin paths:"
+            printf ' - %s\n' "${REMOTE_PLUGIN_PATHS[@]}"
+          fi
+
+          {
+            echo "paths<<EOF"
+            printf '%s\n' "${REMOTE_PLUGIN_PATHS[@]}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Upload plugin files
         run: |
-          rsync -azv \
-          --exclude=node_modules \
-          --exclude=.github \
-          --exclude=.idea \
-          --exclude=.git \
-          --exclude=.gitignore \
-          --exclude=.nvmrc \
-          --exclude=composer.json \
-          --exclude=composer.lock \
-          --exclude=package.json \
-          --exclude=package-lock.json \
-          --exclude=vite.config.js \
-          --exclude=README.md \
-          --exclude=deploy \
-          -e "ssh -i ~/.ssh/deploy_key" \
-          ./ "${{ vars.DEPLOY_USER }}@${{ vars.ODERLAND_SERVER_IP }}:${{ steps.target.outputs.path }}/"
+          if [ -z "${{ steps.target.outputs.paths }}" ]; then
+            echo "No remote plugin paths configured. Nothing to upload."
+            exit 0
+          fi
+
+          while IFS= read -r remote_path; do
+            test -n "$remote_path" || continue
+            echo "Uploading to ${{ steps.target.outputs.user }}@${{ vars.ODERLAND_SERVER_IP }}:${remote_path}/"
+
+            rsync -azv \
+            --exclude=node_modules \
+            --exclude=.github \
+            --exclude=.idea \
+            --exclude=.git \
+            --exclude=.gitignore \
+            --exclude=.nvmrc \
+            --exclude=composer.json \
+            --exclude=composer.lock \
+            --exclude=package.json \
+            --exclude=package-lock.json \
+            --exclude=vite.config.js \
+            --exclude=README.md \
+            --exclude=deploy \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            ./ "${{ steps.target.outputs.user }}@${{ vars.ODERLAND_SERVER_IP }}:${remote_path}/"
+          done <<'EOF'
+          ${{ steps.target.outputs.paths }}
+          EOF
