@@ -15,8 +15,9 @@ The plugin follows a modular structure under `src/`, where each feature or widge
 
 - Install PHP deps: `composer install`
 - Install JS deps: `npm install`
-- Build production assets: `npx mix --production`
-- Watch assets during development: `npx mix watch`
+- Before building assets, inspect the project scripts and build config to identify the active asset pipeline.
+- Prefer npm scripts from `package.json` when they exist, for example `npm run build`, `npm run dev`, or `npm run watch`.
+- If the project still uses Laravel Mix and has no npm scripts for assets, use the existing Mix commands from that project, such as `npx mix --production` or `npx mix watch`.
 
 # Code Standards
 
@@ -25,6 +26,8 @@ The plugin follows a modular structure under `src/`, where each feature or widge
 - Place Elementor widget classes in `Widget.php` when that pattern already exists for the feature.
 - Keep templates in feature-local `template/` or `templates/` directories.
 - Keep frontend behavior in feature-local JS files and styling in feature-local SCSS files when the feature already has that structure.
+- Use SCSS for generated styles. Do not add plain CSS source files unless the existing feature explicitly requires CSS.
+- If generating JS or SCSS code with AI, add `AI generated code` as a top-of-file comment in the generated JS or SCSS source file.
 - Prefer small, targeted edits over broad refactors.
 - Follow existing naming, namespace, and registration patterns in the plugin.
 - Use 4 spaces for indentation in PHP files.
@@ -39,9 +42,15 @@ The plugin follows a modular structure under `src/`, where each feature or widge
 
 # Asset Pipeline
 
-- Asset compilation is handled with Laravel Mix via `webpack.mix.js`.
+- Asset compilation may be handled by Vite, Laravel Mix, or another existing project pipeline. Inspect `package.json`, `vite.config.js`, `webpack.mix.js`, and related docs before changing or running build commands.
+- If the project uses Vite, prefer `vite.config.js`, npm scripts, and `rollupOptions.input` for JS and SCSS entrypoints.
+- If the project uses Vite with Vue, use `@vitejs/plugin-vue` for Vue 3+ support. Do not add Vue 2 handling unless the existing project explicitly requires Vue 2.
+- In Vite projects, the Vue plugin does not bundle Vue by itself; Vue is only included in compiled scripts when an entrypoint imports Vue.
+- If the project uses Laravel Mix, preserve the existing `webpack.mix.js` behavior unless the task specifically asks for a migration.
+- Keep output filenames stable and hash-free when WordPress enqueue calls point at fixed `dist/` files.
 - Source files live in `assets/` and feature-local `src/**/js` or `src/**/style` paths.
 - Rebuild `dist/` after changing JS or SCSS that is shipped by the plugin.
+- Do not introduce a dev server workflow by default for WordPress plugins. Use the project's existing watch/build workflow unless the task asks otherwise.
 
 # Testing Requirements
 
