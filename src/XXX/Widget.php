@@ -67,7 +67,33 @@ class Widget extends \Elementor\Widget_Base
 
     protected function render()
     {
+        // Show generic preview in editor
+        if ( \Elementor\Plugin::$instance->editor->is_edit_mode() ) {
+            $this->render_preview_content();
+            return;
+        }
+        
         include(WEBIEN_SITE_PLUGIN_PATH . '/src/XXX/templates/view.php');
+    }
+
+
+    protected function content_template()
+    {
+        $this->render_preview_content();
+    }
+
+
+    protected function render_preview_content()
+    {
+        ?>
+        <div class="webien-elementor-widget-preview">
+            <i class="<?= $this->get_icon() ?>"></i>
+            <h3 class="title">
+                <?= $this->get_title() ?>
+                <small><?= __('Ingen förhandsvisning', 'webien') ?></small>
+            </h3>
+        </div>
+        <?php
     }
 
 }
