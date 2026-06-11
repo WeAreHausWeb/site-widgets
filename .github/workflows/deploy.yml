@@ -1,0 +1,84 @@
+name: Deploy Site widgets plugin
+
+on:
+  push:
+    branches:
+      - master
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Deploy target"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || 'staging' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production assets
+        run: npm run build
+
+
+      - name: Check deploy config
+        run: |
+          test -n "${{ vars.ODERLAND_SERVER_IP }}" || (echo "ODERLAND_SERVER_IP variable is missing" && exit 1)
+          test -n "${{ vars.DEPLOY_USER }}" || (echo "DEPLOY_USER variable is missing" && exit 1)
+          test -n "${{ secrets.DEPLOY_SSH_KEY }}" || (echo "DEPLOY_SSH_KEY secret is missing" && exit 1)
+          test -n "${{ vars.STAGING_DEPLOY_PATH }}" || (echo "STAGING_DEPLOY_PATH variable is missing" && exit 1)
+          test -n "${{ vars.PRODUCTION_DEPLOY_PATH }}" || (echo "PRODUCTION_DEPLOY_PATH variable is missing" && exit 1)
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ vars.ODERLAND_SERVER_IP }}" >> ~/.ssh/known_hosts
+
+      - name: Set remote path
+        id: target
+        run: |
+          ENVIRONMENT="${{ github.event.inputs.environment || 'staging' }}"
+          
+          if [ "$ENVIRONMENT" = "production" ]; then
+            echo "path=${{ vars.PRODUCTION_DEPLOY_PATH }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "path=${{ vars.STAGING_DEPLOY_PATH }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload plugin files
+        run: |
+          rsync -azv \
+          --exclude=node_modules \
+          --exclude=.github \
+          --exclude=.idea \
+          --exclude=.git \
+          --exclude=.gitignore \
+          --exclude=.nvmrc \
+          --exclude=composer.json \
+          --exclude=composer.lock \
+          --exclude=package.json \
+          --exclude=package-lock.json \
+          --exclude=vite.config.js \
+          --exclude=README.md \
+          --exclude=deploy \
+          -e "ssh -i ~/.ssh/deploy_key" \
+          ./ "${{ vars.DEPLOY_USER }}@${{ vars.ODERLAND_SERVER_IP }}:${{ steps.target.outputs.path }}/"

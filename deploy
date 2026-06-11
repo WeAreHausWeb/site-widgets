@@ -19,27 +19,28 @@ REMOTE_PLUGIN_PATH='www/wp-content/plugins/site-widgets';
 # COMPILE & MINIFY
 # ------------------------------------------------- #
 #nvm use
-npx mix --production
-
+npm run --silent build -- --logLevel error
+echo -e "\033[0;90m✓ Compiled and minified files"
 
 # ------------------------------------------------- #
 # SYNC NECESSARY FILES TO SERVER
 # ------------------------------------------------- #
 # Sync files/folders to server
 export LC_ALL=C
-rsync -a ./* $SSH_USER@$SSH_SERVER:$REMOTE_PLUGIN_PATH --exclude=node_modules --exclude=.github --exclude=.idea --exclude=.gitignore --exclude=.nvmrc --exclude=composer.json --exclude=composer.lock --exclude=mix-manifest.json --exclude=package.json --exclude=info.json --exclude=package-lock.json --exclude=webpack.mix.js --exclude=README.md --exclude=deploy
-
+rsync -a ./* $SSH_USER@$SSH_SERVER:$REMOTE_PLUGIN_PATH --exclude=node_modules --exclude=.github --exclude=.idea --exclude=.gitignore --exclude=.nvmrc --exclude=composer.json --exclude=composer.lock --exclude=package.json --exclude=info.json --exclude=package-lock.json --exclude=vite.config.js --exclude=README.md --exclude=deploy
+echo -e "\033[0;90m✓ Uploaded compiled files"
 
 # ------------------------------------------------- #
 # CLEANUP
 # ------------------------------------------------- #
 # Beautify scripts again locally
-npx mix
+npm run --silent dev -- --logLevel error
 
 
 # ------------------------------------------------- #
 # SUCCESS
 # ------------------------------------------------- #
-echo -e "\033[0;32m›››››››››››››››››››››››››››››››››"
 echo -e "\033[0;32m›››››››› Deploy complete ‹‹‹‹‹‹‹‹"
+echo -e "\033[0;33m›››››››› Make sure you push your"
+echo -e "\033[0;33m›››››››› changes to git as well!"
 echo -e "\033[0;32m›››››››››››››››››››››››››››››››››"

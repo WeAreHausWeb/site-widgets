@@ -4,19 +4,18 @@
     "description": "Webien site plugin",
     "main": "index.js",
     "scripts": {
+        "dev": "vite build --mode development --minify false",
+        "watch": "vite build --mode development --minify false --watch",
+        "build": "vite build",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [],
     "author": "webien",
     "license": "ISC",
     "devDependencies": {
-        "browser-sync": "*",
-        "browser-sync-webpack-plugin": "*",
-        "laravel-mix": "*",
-        "resolve-url-loader": "*",
         "sass": "*",
-        "sass-loader": "*",
-        "vue-loader": "*"
+        "vite": "*",
+        "@vitejs/plugin-vue": "*"
     },
     "dependencies": {
         "axios": "*",

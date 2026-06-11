@@ -9,19 +9,32 @@ npm install
 ```
 -----
 #
-#### Kompilerar styles/scripts med Laravel Mix
-För komma igång och kompilera, kör:
+#### Kompilerar styles/scripts med Vite
+För en utvecklingskompilering utan minifiering, kör:
 ```
-npx mix watch
+npm run dev
 ```
-Editera `webpack.mix.js` filen för att lägga till fler styles/scripts.
+
+För att kompilera automatiskt vid ändringar, kör:
+```
+npm run watch
+```
+
+För produktionsbygge, kör:
+```
+npm run build
+```
+
+Editera `vite.config.js` filen för att lägga till fler styles/scripts.
 
 -----
 #
 #### Deploy till server
-Pusha alltid upp dina ändringar till git först.
-Se även till att första gången editera `deploy` filen så att den pekar till din server.
-För att sedan deploya din kod till servern, ställ dig i denna mapp och kör:
+Deploy sker automatiskt från github till servern om allt är uppsatt rätt i repot.
+Så det ska räcka med att pusha/merga till master branch för att deploya till servern.
+
+Det går att göra en manuell deploy av filer till servern om `deploy` filen är hanterad och pekar till din server.
+För att manuellt deploya din kod till servern, ställ dig i denna mapp och kör:
 ```
 ./deploy
 ```
