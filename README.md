@@ -39,6 +39,8 @@ Editera `vite.config.js` filen vid behov för att hantera styles/scripts.
 
 -----
 ### Deploy till server (Oderland)
+Se först till att uppdatera `deploy` filen som ligger i roten av pluginnet. Editera användarnamn och paths så att de matchar serverns setup.
+
 Deploy sker automatiskt från github till servern om allt är uppsatt rätt i repot.
 Så det ska räcka med att pusha/merga till master branch för att deploya till servern.
 Fungerar det inte - [se info angående uppsättning av github actions här](https://github.com/WeAreHausWeb/dev/blob/main/Guides/Github-actions.md).
