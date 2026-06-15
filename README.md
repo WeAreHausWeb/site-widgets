@@ -45,7 +45,7 @@ Deploy sker automatiskt från github till servern om allt är uppsatt rätt i re
 Så det ska räcka med att pusha/merga till master branch för att deploya till servern.
 Fungerar det inte - [se info angående uppsättning av github actions här](https://github.com/WeAreHausWeb/dev/blob/main/Guides/Github-actions.md).
 
-Det går att göra en manuell deploy av filer till servern om `deploy` filen är hanterad och pekar till din server.
+Det går äben att göra en manuell deploy av filer till servern om `deploy` filen är hanterad och pekar till din server.
 För att manuellt deploya din kod till servern, ställ dig i denna mapp och kör:
 
 ```
