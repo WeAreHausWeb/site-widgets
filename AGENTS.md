@@ -15,9 +15,10 @@ The plugin follows a modular structure under `src/`, where each feature or widge
 
 - Install PHP deps: `composer install`
 - Install JS deps: `npm install`
-- Before building assets, inspect the project scripts and build config to identify the active asset pipeline.
-- Prefer npm scripts from `package.json` when they exist, for example `npm run build`, `npm run dev`, or `npm run watch`.
-- If the project still uses Laravel Mix and has no npm scripts for assets, use the existing Mix commands from that project, such as `npx mix --production` or `npx mix watch`.
+- Before building assets, inspect the project's package scripts, build configuration, lockfiles, README, and existing `dist/` output to identify the active asset pipeline.
+- Prefer the commands already defined by the project, especially package scripts, instead of assuming a specific bundler or invoking tool binaries directly.
+- If the project has no package scripts for assets, infer the correct build and watch commands from the local configuration files and documentation before running anything.
+- If the active pipeline is unclear, ask for confirmation rather than introducing or migrating to a different build tool.
 
 # Code Standards
 
@@ -42,11 +43,10 @@ The plugin follows a modular structure under `src/`, where each feature or widge
 
 # Asset Pipeline
 
-- Asset compilation may be handled by Vite, Laravel Mix, or another existing project pipeline. Inspect `package.json`, `vite.config.js`, `webpack.mix.js`, and related docs before changing or running build commands.
-- If the project uses Vite, prefer `vite.config.js`, npm scripts, and `rollupOptions.input` for JS and SCSS entrypoints.
-- If the project uses Vite with Vue, use `@vitejs/plugin-vue` for Vue 3+ support. Do not add Vue 2 handling unless the existing project explicitly requires Vue 2.
-- In Vite projects, the Vue plugin does not bundle Vue by itself; Vue is only included in compiled scripts when an entrypoint imports Vue.
-- If the project uses Laravel Mix, preserve the existing `webpack.mix.js` behavior unless the task specifically asks for a migration.
+- Asset compilation varies between projects. Inspect the local package manifest, build config files, source imports, enqueue paths, README, and existing compiled output before changing entrypoints or running builds.
+- Use the project's current asset pipeline as-is unless the task specifically asks for a migration.
+- When adding JS or SCSS entrypoints, follow the existing local build configuration and naming conventions.
+- When framework-specific support is needed, verify the framework version and plugin requirements from the project's installed packages and config before adding dependencies or changing build behavior.
 - Keep output filenames stable and hash-free when WordPress enqueue calls point at fixed `dist/` files.
 - Source files live in `assets/` and feature-local `src/**/js` or `src/**/style` paths.
 - Rebuild `dist/` after changing JS or SCSS that is shipped by the plugin.
