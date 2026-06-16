@@ -37,6 +37,7 @@ The plugin follows a modular structure under `src/`, where each feature or widge
 # WordPress / Elementor Guidance
 
 - Prefer WordPress core APIs for posts, terms, metadata, options, queries, hooks, escaping, and localization.
+- Place any new Elementor widgets under the existing `webien` widget category.
 - When working with Elementor widgets, preserve the current control structure and existing editor UX unless the task requires changing it.
 - Reuse existing render patterns for Elementor, JetEngine, and template output instead of inventing parallel flows.
 - Keep site-specific business logic inside this plugin rather than scattering it into theme code.
