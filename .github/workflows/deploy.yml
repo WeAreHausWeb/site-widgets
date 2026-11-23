@@ -16,6 +16,13 @@ on:
           - staging
           - production
 
+# One deploy at a time per environment, in push order. A queued run whose commit is no longer
+# the newest on the branch skips itself (see "Skip if superseded"), so an older version can
+# never land on top of a newer one.
+concurrency:
+  group: deploy-${{ github.event_name == 'push' && 'production' || github.event.inputs.environment }}
+  cancel-in-progress: false
+
 jobs:
   deploy:
     name: Deploy to ${{ github.event_name == 'push' && 'production' || github.event.inputs.environment }}
@@ -25,19 +32,41 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Skip if superseded
+        id: current
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            HEAD=$(git ls-remote origin "refs/heads/${GITHUB_REF_NAME}" | cut -f1)
+            if [ -n "$HEAD" ] && [ "$HEAD" != "$GITHUB_SHA" ]; then
+              echo "A newer commit ($HEAD) is on ${GITHUB_REF_NAME}; its own run deploys it. Skipping $GITHUB_SHA."
+              echo "skip=yes" >> "$GITHUB_OUTPUT"; exit 0
+            fi
+          fi
+          echo "skip=no" >> "$GITHUB_OUTPUT"
+
+      - name: Lint PHP
+        if: steps.current.outputs.skip == 'no'
+        run: |
+          find . -name '*.php' -not -path './vendor/*' -not -path './node_modules/*' -print0 \
+            | xargs -0 -r -n1 php -l > /dev/null
+
       - name: Setup Node
+        if: steps.current.outputs.skip == 'no'
         uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
 
       - name: Install dependencies
+        if: steps.current.outputs.skip == 'no'
         run: npm ci
 
       - name: Build production assets
+        if: steps.current.outputs.skip == 'no'
         run: npm run build
 
       - name: Verify build output
+        if: steps.current.outputs.skip == 'no'
         run: |
           test -f dist/script.js || (echo "dist/script.js was not built" && exit 1)
           test -f dist/style.css || (echo "dist/style.css was not built" && exit 1)
@@ -47,18 +76,24 @@ jobs:
 
 
       - name: Check deploy config
+        if: steps.current.outputs.skip == 'no'
         run: |
           test -n "${{ vars.ODERLAND_SERVER_IP }}" || (echo "ODERLAND_SERVER_IP variable is missing" && exit 1)
           test -n "${{ secrets.DEPLOY_SSH_KEY }}" || (echo "DEPLOY_SSH_KEY secret is missing" && exit 1)
 
       - name: Configure SSH
+        if: steps.current.outputs.skip == 'no'
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" | tr -d '\r' > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
+          ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null
+          echo "Deploy key fingerprint:"
+          ssh-keygen -y -f ~/.ssh/deploy_key | ssh-keygen -lf -
           ssh-keyscan -H "${{ vars.ODERLAND_SERVER_IP }}" >> ~/.ssh/known_hosts
 
       - name: Set remote paths
+        if: steps.current.outputs.skip == 'no'
         id: target
         run: |
           ENVIRONMENT="${{ github.event_name == 'push' && 'production' || github.event.inputs.environment }}"
@@ -90,7 +125,26 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Test SSH connection
+        if: steps.current.outputs.skip == 'no'
+        run: |
+          ssh \
+            -i ~/.ssh/deploy_key \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            "${{ steps.target.outputs.user }}@${{ vars.ODERLAND_SERVER_IP }}" \
+            "echo SSH connection OK"
+
+      - name: Write release marker
+        if: steps.current.outputs.skip == 'no'
+        run: |
+          # Read by haus_site.py over plain HTTP to confirm what is live. Commit id and time only.
+          printf '%s %s\n' "$GITHUB_SHA" "$(date -u +%FT%TZ)" > release.txt
+          cat release.txt
+
       - name: Upload plugin files
+        if: steps.current.outputs.skip == 'no'
         run: |
           if [ -z "${{ steps.target.outputs.paths }}" ]; then
             echo "No remote plugin paths configured. Nothing to upload."
@@ -115,8 +169,27 @@ jobs:
             --exclude=vite.config.js \
             --exclude=README.md \
             --exclude=deploy \
-            -e "ssh -i ~/.ssh/deploy_key" \
+            --exclude=haus-site.json \
+            --exclude=.haus \
+            --exclude=AGENTS.md \
+            --exclude=CLAUDE.md \
+            --exclude=.claude \
+            -e "ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" \
             ./ "${{ steps.target.outputs.user }}@${{ vars.ODERLAND_SERVER_IP }}:${remote_path}/"
           done <<'EOF'
           ${{ steps.target.outputs.paths }}
           EOF
+
+      - name: Clear caches
+        if: steps.current.outputs.skip == 'no'
+        continue-on-error: true
+        run: |
+          # Optional: set WP_PATH_PROD / WP_PATH_STAGE in the deploy file to the WordPress root on the
+          # server to purge LiteSpeed and regenerate Elementor CSS after each deploy (needs wp-cli there).
+          sed -n '1,/^# No further adjustments/p' deploy > "$RUNNER_TEMP/deploy-config.sh"
+          source "$RUNNER_TEMP/deploy-config.sh"
+          if [ "${{ steps.target.outputs.environment }}" = "production" ]; then WP_PATH="${WP_PATH_PROD:-}"; else WP_PATH="${WP_PATH_STAGE:-}"; fi
+          if [ -z "$WP_PATH" ]; then echo "No WP path in deploy; skipping cache purge."; exit 0; fi
+          ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes \
+            "${{ steps.target.outputs.user }}@${{ vars.ODERLAND_SERVER_IP }}" \
+            "cd '$WP_PATH' && (wp litespeed-purge all || true) && (wp elementor flush-css || true)"

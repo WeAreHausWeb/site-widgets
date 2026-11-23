@@ -12,6 +12,9 @@ declare -a REMOTE_PLUGIN_PATH_PROD=(
 declare -a REMOTE_PLUGIN_PATH_STAGE=(
 'www/XXX.se.haus.se/wp-content/plugins/site-widgets'
 )
+# Optional: WordPress root on the server, for cache purge after a GitHub Actions deploy (needs wp-cli).
+WP_PATH_PROD=''
+WP_PATH_STAGE=''
 
 
 # No further adjustments are needed.

@@ -69,3 +69,28 @@ The plugin follows a modular structure under `src/`, where each feature or widge
 - This plugin is a reusable site-plugin pattern, so keep documentation and structure generic enough to apply to similar sibling plugins.
 - Avoid assumptions that every site plugin contains the same widgets or integrations.
 - When adding new code, match the local feature layout instead of imposing a new global pattern.
+
+# Haus WP protocol (Claude sessions)
+
+This repo is the only source of a site's own code. The rules below apply to people and Claude alike.
+
+- **One repo per site:** `WeAreHausWeb/<domain>`, created by Simon from this template. `haus-site.json`
+  says which site this checkout belongs to; in the template its domain is `TEMPLATE`, which means
+  "not set up". Never create a site repo yourself.
+- **Code never reaches the site through MCP** (Novamira or any other bridge). It is committed here and
+  deployed by `.github/workflows/deploy.yml` on push to `master`. No child theme, no files edited on the
+  server, no code in `novamira-sandbox/`.
+- **Publish with the protocol script**, which lints, commits only the given paths with a `Task:` trailer,
+  rebases on others' work (never force), pushes and waits until the site's `release.txt` shows the commit:
+  `python3 -I <haus-wp-protocol>/skills/wp-operations/scripts/haus_site.py publish --task <id> --message "..." --paths <files>`.
+  `committed`, `pushed` and `live` are separate results; only `live` means published.
+- **Roll back** with `haus_site.py rollback --task <id>` (a revert commit, published the same way).
+- **Features:** one folder per feature in `src/<Feature>/`, registered once in `index.php` with
+  `Features::add('<slug>', '<Title>', fn () => ..., '<what it does>')`. Slugs are lowercase. The boot
+  callback only adds hooks. Every feature can be switched off in Settings > Site features.
+- **Public names are permanent:** widget names (`get_name()`), shortcodes, dynamic tags, option names,
+  CSS classes and hooks are stored in the database and markup. Never rename one; add a new one.
+- **Guard dependencies:** wrap calls into other plugins (ACF, Elementor Pro, Webien Suite, Haus MCP Manager)
+  in `function_exists()` / `class_exists()`. A fatal at load takes the site down, and the only way back is
+  a rollback commit.
+- **Not deployed:** `haus-site.json`, `AGENTS.md`, `CLAUDE.md`, `.claude/`, `.haus/`, build config.
