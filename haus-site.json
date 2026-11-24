@@ -1,0 +1,9 @@
+{
+  "domain": "TEMPLATE",
+  "production_url": "https://TEMPLATE",
+  "repo": "WeAreHausWeb/TEMPLATE",
+  "template": "WeAreHausWeb/site-widgets",
+  "publish_branch": "master",
+  "plugin_dir": "site-widgets",
+  "deploy": "github-actions"
+}

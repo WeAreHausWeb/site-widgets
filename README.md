@@ -1,5 +1,12 @@
 # Site Widgets
-Template plugin för att bygga vidare på och ska innehålla diverse site specifika widgets.
+Mall för en sajts eget plugin. Varje sajt får ett eget repo, `WeAreHausWeb/<domän>`, som Simon skapar från den här mallen
+(`haus_site.py create-repo`). Allt sajtspecifikt ligger här: widgets, PHP, JS och CSS. Det som alla sajter har ligger i Webien Suite.
+
+**Koden når sajten bara via det här repot.** En push till `master` bygger och deployar till produktion via GitHub Actions.
+Ingen kod skrivs direkt på servern, varken av utvecklare eller av Claude. Redaktörer publicerar via Claude med
+`haus_site.py publish`, och backar med `haus_site.py rollback` (se `AGENTS.md` och haus-wp-protocol).
+
+**Funktioner** registreras i `index.php` med `Features::add()` och kan slås av under *Inställningar › Site features*.
 
 #### För att komma igång, kör först:
 ```
@@ -14,7 +21,7 @@ npm install
 - Bygg dina widgets i src mappen.
 Se exempel med `XXX` mappen
 
-- Widgets registreras sen och initieras i `index.php` filen.
+- Widgets och andra funktioner registreras i `index.php` med `Features::add()`.
 
 -----
 ### Kompilering
@@ -55,3 +62,13 @@ eller
 ```
 ./deploy -staging
 ```
+
+
+-----
+### Säkerställ att deployen gick ut
+Workflowet skriver `release.txt` (commit och tid) i pluginet vid varje deploy. `haus_site.py status` jämför den med repot.
+Sätt gärna `WP_PATH_PROD` i `deploy` för att rensa LiteSpeed och Elementor-CSS efter varje deploy.
+
+### Skydd på repot
+Varje sajtrepo har en regel på `master`: ingen force push och ingen radering (skapas av `create-repo`). Pushar går direkt
+till produktion – det finns ingen PR eller staging i redaktörsflödet; historiken och återställningen är skyddsnätet.

@@ -3,7 +3,8 @@
  * Plugin Name: Site widgets
  * Plugin URI: https://plugins.webien.io
  * Author: Webien
- * Description: Site specific widgets.
+ * Description: Site specific widgets and features. Managed in the site's own repo and deployed from it; see Settings > Site features.
+ * Standard: haus-wp-protocol
  * Author URI: https://plugins.webien.io
  */
 
@@ -20,23 +21,26 @@ if (file_exists(WEBIEN_SITE_PLUGIN_PATH . '/vendor/autoload.php')) {
     require WEBIEN_SITE_PLUGIN_PATH . '/vendor/autoload.php';
 }
 
-// Includes
-// require_once WEBIEN_SITE_PLUGIN_PATH . '/src/XXX.php';
+use Webien\Site\Core\Features;
 
-
-// Register Elementor Widgets
-add_action('init', function () {
-    if (!defined('WP_INSTALLING') && did_action('elementor/loaded') && class_exists('acf')) {
-
-        /*
-        \Elementor\Plugin::instance()
-            ->widgets_manager
-            ->register(new \Webien\Site\XXX\Widget());
-        */
-
-    }
-
-});
+/*
+ * Features
+ *
+ * Every feature in src/<Feature>/ is registered here, once, with Features::add(). It then shows
+ * in Settings > Site features, where it can be switched off without deleting anything. The same
+ * structure applies whether a developer or Claude writes the code, and code reaches the site only
+ * through this repo's deploy (never by editing files on the server).
+ *
+ * Example:
+ *
+ * Features::add('xxx', 'XXX widget', function () {
+ *     add_action('elementor/widgets/register', function ($widgets) {
+ *         if (class_exists('acf')) {
+ *             $widgets->register(new \Webien\Site\XXX\Widget());
+ *         }
+ *     });
+ * }, 'What the feature does, in one sentence.');
+ */
 
 
 add_action('wp_enqueue_scripts', function () {
