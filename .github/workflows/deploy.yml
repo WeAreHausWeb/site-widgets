@@ -53,9 +53,12 @@ jobs:
 
       - name: Configure SSH
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" | tr -d '\r' > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
+          ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null
+          echo "Deploy key fingerprint:"
+          ssh-keygen -y -f ~/.ssh/deploy_key | ssh-keygen -lf -
           ssh-keyscan -H "${{ vars.ODERLAND_SERVER_IP }}" >> ~/.ssh/known_hosts
 
       - name: Set remote paths
@@ -90,6 +93,16 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Test SSH connection
+        run: |
+          ssh \
+            -i ~/.ssh/deploy_key \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
+            "${{ steps.target.outputs.user }}@${{ vars.ODERLAND_SERVER_IP }}" \
+            "echo SSH connection OK"
+
       - name: Upload plugin files
         run: |
           if [ -z "${{ steps.target.outputs.paths }}" ]; then
@@ -115,7 +128,7 @@ jobs:
             --exclude=vite.config.js \
             --exclude=README.md \
             --exclude=deploy \
-            -e "ssh -i ~/.ssh/deploy_key" \
+            -e "ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes" \
             ./ "${{ steps.target.outputs.user }}@${{ vars.ODERLAND_SERVER_IP }}:${remote_path}/"
           done <<'EOF'
           ${{ steps.target.outputs.paths }}
